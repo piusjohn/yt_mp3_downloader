@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube to MP3 Downloader</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-r from-purple-900 via-pink-800 to-purple-700 flex items-center justify-center min-h-screen text-white">
+  <div class="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-4 text-center">🎶 YouTube MP3 Downloader</h1>
+    <input id="urlInput" type="text" placeholder="Paste YouTube link..." 
+      class="w-full p-3 rounded-lg text-black mb-4 outline-none" />
+    <button onclick="downloadMP3()" 
+      class="w-full bg-pink-600 hover:bg-pink-700 p-3 rounded-lg font-semibold">
+      Download MP3
+    </button>
+    <p id="status" class="text-center mt-4 text-sm"></p>
+  </div>
+
+  <script>
+    async function downloadMP3() {
+      const url = document.getElementById("urlInput").value;
+      const status = document.getElementById("status");
+      status.textContent = "⏳ Downloading... please wait";
+
+      try {
+        const formData = new FormData();
+        formData.append("url", url);
+
+        const response = await fetch("http://<YOUR-EC2-PUBLIC-IP>:8000/download-mp3/", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) throw new Error("Download failed!");
+
+        // Get MP3 blob
+        const blob = await response.blob();
+        const link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = "song.mp3";
+        link.click();
+
+        status.textContent = "✅ Download complete!";
+      } catch (error) {
+        status.textContent = "❌ Error: " + error.message;
+      }
+    }
+  </script>
+</body>
+</html>
+
